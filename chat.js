@@ -20,7 +20,12 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    res.status(response.status).json(data);
+
+if (!response.ok) {
+  console.error("Anthropic API Error:", data);
+}
+
+res.status(response.status).json(data);
 
   } catch (error) {
     res.status(500).json({ error: 'Proxy error', detail: error.message });
