@@ -49,7 +49,7 @@
   .send svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .send:disabled { background: #c5d8ec; cursor: not-allowed; }
   .key-hint { text-align: center; font-size: 11px; color: #a0b0c0; padding: 6px 0 2px; }
-  .err { background: #fff0f0; border: 1px solid #ffb3b3; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #cc0000; font-family: monospace; word-break: break-all; margin-top: 6px; }
+  .err { background:#fff0f0;border:1px solid #ffb3b3;border-radius:8px;padding:10px 14px;font-size:12px;color:#cc0000;font-family:monospace;word-break:break-all;margin-top:6px; }
 </style>
 </head>
 <body>
@@ -103,14 +103,8 @@
     </div>
   </div>
 </div>
-
 <script>
-  // ========================================================
-  // STEP 1: PASTE YOUR FULL API KEY BETWEEN THE QUOTES BELOW
-  // Example: const API_KEY = 'sk-ant-api03-abc123...xyz';
-  // ========================================================
   const API_KEY = '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';
-
   const SYSTEM = `You are the DFF AI Program Assistant for Dubai Future Foundation.
 Scope: AI strategy, governance frameworks (UAE AI Strategy 2031), use case prioritisation,
 stakeholder readiness, KPI design, vendor evaluation, change management.
@@ -122,99 +116,82 @@ Max 350 words unless asked for a full document.`;
   const inp = document.getElementById('inp');
   const sbtn = document.getElementById('sbtn');
 
-  // Check on load if key is set
-  window.addEventListener('load', () => {
-    if (API_KEY === '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' || API_KEY === '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' || !API_KEY.startsWith('sk-')) {
-      addMsg('bot', '⚠️ <strong>API Key not configured.</strong><br>Open this HTML file in a text editor, find the line:<br><code style="background:#f0f0f0;padding:2px 6px;border-radius:3px">const API_KEY = \'PASTE_YOUR_KEY_HERE\'</code><br>and replace <code>PASTE_YOUR_KEY_HERE</code> with your real Anthropic key starting with <code>sk-ant-api03-...</code>');
-    }
-  });
+  function grow(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+  function kd(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+  function fill(t) { inp.value=t; inp.focus(); grow(inp); }
+  function qs(t) { inp.value=t; send(); }
 
-  function grow(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
-  function kd(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
-  function fill(t) { inp.value = t; inp.focus(); grow(inp); }
-  function qs(t) { inp.value = t; send(); }
-
-  function addMsg(role, html, sugs = []) {
-    const d = document.createElement('div');
-    d.className = `msg ${role}`;
-    const av = role === 'bot' ? '<div class="av bot">🤖</div>' : '<div class="av user">AM</div>';
-    const sugHtml = sugs.length ? `<div class="sugs">${sugs.map(s => `<button class="sug" onclick="qs('${s.replace(/'/g,"&#39;")}')">${s} ↗</button>`).join('')}</div>` : '';
-    d.innerHTML = `${av}<div><div class="bubble">${html}</div>${sugHtml}</div>`;
+  function addMsg(role, html, sugs=[]) {
+    const d=document.createElement('div');
+    d.className=`msg ${role}`;
+    const av=role==='bot'?'<div class="av bot">🤖</div>':'<div class="av user">AM</div>';
+    const sugHtml=sugs.length?`<div class="sugs">${sugs.map(s=>`<button class="sug" onclick="qs('${s.replace(/'/g,"&#39;")}')">${s} ↗</button>`).join('')}</div>`:'';
+    d.innerHTML=`${av}<div><div class="bubble">${html}</div>${sugHtml}</div>`;
     msgsEl.appendChild(d);
-    msgsEl.scrollTop = msgsEl.scrollHeight;
+    msgsEl.scrollTop=msgsEl.scrollHeight;
   }
 
   function showTyping() {
-    const d = document.createElement('div');
-    d.className = 'msg bot'; d.id = 'typing';
-    d.innerHTML = `<div class="av bot">🤖</div><div class="bubble typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
-    msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
+    const d=document.createElement('div');
+    d.className='msg bot'; d.id='typing';
+    d.innerHTML=`<div class="av bot">🤖</div><div class="bubble typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+    msgsEl.appendChild(d); msgsEl.scrollTop=msgsEl.scrollHeight;
   }
 
   function fmt(t) {
     return t
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^### (.+)$/gm, '<strong style="font-size:14px;display:block;margin:8px 0 4px">$1</strong>')
-      .replace(/^## (.+)$/gm, '<strong style="font-size:15px;display:block;margin:10px 0 4px">$1</strong>')
-      .replace(/^- /gm, '• ')
-      .replace(/\n/g, '<br>');
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^### (.+)$/gm,'<strong style="font-size:14px;display:block;margin:8px 0 4px">$1</strong>')
+      .replace(/^## (.+)$/gm,'<strong style="font-size:15px;display:block;margin:10px 0 4px">$1</strong>')
+      .replace(/^- /gm,'• ')
+      .replace(/\n/g,'<br>');
   }
 
   async function send() {
-    if (API_KEY === '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' || !API_KEY.startsWith('sk-')) {
-      addMsg('bot', '❌ <strong>API key missing.</strong> Please edit this file and add your key first.');
-      return;
-    }
-    const text = inp.value.trim();
-    if (!text || busy) return;
-    busy = true; sbtn.disabled = true;
-    inp.value = ''; inp.style.height = 'auto';
+    const text=inp.value.trim();
+    if(!text||busy) return;
+    busy=true; sbtn.disabled=true;
+    inp.value=''; inp.style.height='auto';
     addMsg('user', text.replace(/</g,'&lt;').replace(/>/g,'&gt;'));
-    hist.push({ role: 'user', content: text });
+    hist.push({role:'user',content:text});
     showTyping();
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':API_KEY,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
         },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: SYSTEM,
-          messages: hist
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system:SYSTEM,
+          messages:hist
         })
       });
-
-      // Show exact error from Anthropic if something goes wrong
-      if (!res.ok) {
-        const errData = await res.json();
+      if(!res.ok){
+        const e=await res.json();
         document.getElementById('typing')?.remove();
-        const errMsg = errData?.error?.message || JSON.stringify(errData);
-        addMsg('bot', `❌ <strong>API Error (${res.status}):</strong><div class="err">${errMsg}</div>`);
-        busy = false; sbtn.disabled = false;
-        return;
+        addMsg('bot',`❌ <strong>API Error ${res.status}:</strong><div class="err">${e?.error?.message||JSON.stringify(e)}</div>`);
+        busy=false; sbtn.disabled=false; return;
       }
-
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || 'No response text returned.';
-      hist.push({ role: 'assistant', content: reply });
+      const data=await res.json();
+      const reply=data.content?.[0]?.text||'No response returned.';
+      hist.push({role:'assistant',content:reply});
       document.getElementById('typing')?.remove();
-      const sugs = [];
-      if (/roadmap|milestone/i.test(reply)) sugs.push('Convert this to a GANTT timeline');
-      if (/governance|policy/i.test(reply)) sugs.push('Draft a governance committee charter');
-      if (/use case|prioriti/i.test(reply)) sugs.push('Build a use case scoring matrix');
-      if (/kpi|metric/i.test(reply)) sugs.push('Create a KPI dashboard template');
-      addMsg('bot', fmt(reply), sugs.slice(0,3));
-
+      const sugs=[];
+      if(/roadmap|milestone/i.test(reply)) sugs.push('Convert this to a GANTT timeline');
+      if(/governance|policy/i.test(reply)) sugs.push('Draft a governance committee charter');
+      if(/use case|prioriti/i.test(reply)) sugs.push('Build a use case scoring matrix');
+      if(/kpi|metric/i.test(reply)) sugs.push('Create a KPI dashboard template');
+      addMsg('bot',fmt(reply),sugs.slice(0,3));
     } catch(e) {
       document.getElementById('typing')?.remove();
-      addMsg('bot', `❌ <strong>Network error:</strong><div class="err">${e.message}</div>Check your internet connection.`);
+      addMsg('bot',`❌ <strong>Network error:</strong><div class="err">${e.message}</div>`);
     }
-    busy = false; sbtn.disabled = false; inp.focus();
+    busy=false; sbtn.disabled=false; inp.focus();
   }
 </script>
 </body>
