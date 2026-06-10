@@ -49,14 +49,17 @@
   .send svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .send:disabled { background: #c5d8ec; cursor: not-allowed; }
   .key-hint { text-align: center; font-size: 11px; color: #a0b0c0; padding: 6px 0 2px; }
+  .note { background: #fff8e6; border: 1px solid #f0c060; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #7a5500; margin-top: 12px; }
+  .note strong { font-weight: 600; }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="meta">
     <h1>DFF AI Program Assistant</h1>
-    <p>Developed by Ayoobkhan Masooth · Program Manager – AI (Consultant) · Dubai Future Foundation</p>
+    <p>Developed by Ayoobkhan Masooth · Application: Program Manager – AI (Consultant) · Dubai Future Foundation</p>
   </div>
+
   <div class="app">
     <div class="header">
       <div class="logo">🧠</div>
@@ -64,8 +67,12 @@
         <h2>DFF AI Program Assistant</h2>
         <p>Dubai Future Foundation · AI Strategy & Governance</p>
       </div>
-      <div class="status"><div class="dot"></div><span>Online</span></div>
+      <div class="status">
+        <div class="dot"></div>
+        <span>Online</span>
+      </div>
     </div>
+
     <div class="scope-bar">
       <button class="chip" onclick="fill('AI strategy roadmap for government entity')">AI Strategy</button>
       <button class="chip" onclick="fill('AI governance framework UAE')">Governance</button>
@@ -75,14 +82,21 @@
       <button class="chip" onclick="fill('AI vendor evaluation criteria scorecard')">Vendors</button>
       <button class="chip" onclick="fill('AI program KPI metrics design')">KPIs</button>
     </div>
+
     <div class="messages" id="msgs">
       <div class="msg bot">
         <div class="av bot">🤖</div>
         <div>
           <div class="bubble">
-            👋 Welcome to the <strong>DFF AI Program Assistant</strong>.<br><br>
-            I can help with: <span class="tag">AI Strategy</span> <span class="tag">Governance</span> <span class="tag">Use Cases</span> <span class="tag">KPIs</span> <span class="tag">Vendors</span> <span class="tag">Readiness</span><br><br>
-            What would you like to explore?
+            👋 Welcome to the <strong>DFF AI Program Assistant</strong> — built for the Program Manager (AI) Consultant role at Dubai Future Foundation.<br><br>
+            I can help you with:<br>
+            • <span class="tag">AI strategy</span> roadmaps & phased plans<br>
+            • <span class="tag">Governance</span> frameworks & policy alignment<br>
+            • <span class="tag">Use cases</span> identification & prioritisation<br>
+            • <span class="tag">Stakeholder</span> readiness assessments<br>
+            • <span class="tag">KPIs</span> design & reporting frameworks<br>
+            • <span class="tag">Vendor</span> evaluation & RFP criteria<br><br>
+            What would you like to explore today?
           </div>
           <div class="sugs">
             <button class="sug" onclick="qs('Draft a 90-day AI program roadmap for a government entity')">Draft 90-day roadmap ↗</button>
@@ -92,7 +106,7 @@
         </div>
       </div>
     </div>
-    <div class="key-hint">Enter to send · Shift+Enter for new line</div>
+    <div class="key-hint">Press Enter to send · Shift+Enter for new line</div>
     <div class="input-area">
       <textarea id="inp" placeholder="Ask about AI strategy, governance, use cases, KPIs..." rows="1"
         onkeydown="kd(event)" oninput="grow(this)"></textarea>
@@ -101,89 +115,97 @@
       </button>
     </div>
   </div>
+
+  <div class="note">
+    <strong>📌 Setup note:</strong> To enable live AI responses, open this file in a browser and ensure the Anthropic API key is configured in the script below. Replace <code>YOUR_API_KEY</code> with a valid key, or deploy through a backend proxy for production use.
+  </div>
 </div>
 
 <script>
-  // ✅ PRODUCTION: calls YOUR Vercel proxy — API key stays hidden on server
-  const PROXY_URL = '/api/chat';
+const SYSTEM = `You are the DFF AI Program Assistant — an expert AI program manager assistant deployed for Dubai Future Foundation (DFF). Your role aligns with the "Program Manager – AI (Consultant)" position at DFF.
 
-  const SYSTEM = `You are the DFF AI Program Assistant for Dubai Future Foundation.
-Scope: AI strategy, governance frameworks (UAE AI Strategy 2031), use case prioritisation,
-stakeholder readiness, KPI design, vendor evaluation, change management.
-Tone: Professional, strategic, concise. Tie recommendations to UAE Vision 2031.
-Max 350 words unless asked for a full document.`;
+Scope of expertise:
+1. AI strategy development and roadmaps for UAE government entities
+2. AI governance frameworks, ethics, and policy alignment (UAE AI Strategy 2031)
+3. AI use case identification, prioritisation, and business case development
+4. Stakeholder engagement and AI readiness assessments
+5. AI vendor/partner evaluation and procurement
+6. AI KPI design, monitoring, and reporting
+7. Change management and AI adoption programs
+8. Risk management for AI deployments in public sector
 
-  let hist = [], busy = false;
-  const msgsEl = document.getElementById('msgs');
-  const inp = document.getElementById('inp');
-  const sbtn = document.getElementById('sbtn');
+Tone: Professional, strategic, concise. Use structured formats. Always tie recommendations to UAE Vision 2031 or DFF's mandate where relevant. Keep responses focused and actionable. Do not exceed 350 words per response unless asked for a detailed document.`;
 
-  function grow(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
-  function kd(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
-  function fill(t) { inp.value = t; inp.focus(); grow(inp); }
-  function qs(t) { inp.value = t; send(); }
+const API_KEY ='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'; // Replace with your Anthropic API key
+let hist = [], busy = false;
+const msgsEl = document.getElementById('msgs');
+const inp = document.getElementById('inp');
+const sbtn = document.getElementById('sbtn');
 
-  function addMsg(role, html, sugs = []) {
-    const d = document.createElement('div');
-    d.className = `msg ${role}`;
-    const av = role === 'bot' ? '<div class="av bot">🤖</div>' : '<div class="av user">AM</div>';
-    const sugHtml = sugs.length ? `<div class="sugs">${sugs.map(s => `<button class="sug" onclick="qs('${s.replace(/'/g,"&#39;")}')">${s} ↗</button>`).join('')}</div>` : '';
-    d.innerHTML = `${av}<div><div class="bubble">${html}</div>${sugHtml}</div>`;
-    msgsEl.appendChild(d);
-    msgsEl.scrollTop = msgsEl.scrollHeight;
+function grow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+function kd(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
+function fill(t) { inp.value = t; inp.focus(); grow(inp); }
+function qs(t) { inp.value = t; send(); }
+
+function addMsg(role, html, sugs = []) {
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  const av = role === 'bot' ? '<div class="av bot">🤖</div>' : '<div class="av user">AM</div>';
+  const sugHtml = sugs.length ? `<div class="sugs">${sugs.map(s => `<button class="sug" onclick="qs('${s.replace(/'/g,"&#39;")}')">${s} ↗</button>`).join('')}</div>` : '';
+  d.innerHTML = `${av}<div><div class="bubble">${html}</div>${sugHtml}</div>`;
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function showTyping() {
+  const d = document.createElement('div');
+  d.className = 'msg bot'; d.id = 'typing';
+  d.innerHTML = `<div class="av bot">🤖</div><div class="bubble typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+  msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function fmt(t) {
+  return t
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^### (.+)$/gm, '<strong style="font-size:14px;display:block;margin:8px 0 4px">$1</strong>')
+    .replace(/^## (.+)$/gm, '<strong style="font-size:15px;display:block;margin:10px 0 4px">$1</strong>')
+    .replace(/^- /gm, '• ')
+    .replace(/\n/g, '<br>');
+}
+
+async function send() {
+  const text = inp.value.trim();
+  if (!text || busy) return;
+  busy = true; sbtn.disabled = true;
+  inp.value = ''; inp.style.height = 'auto';
+  addMsg('user', text.replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+  hist.push({ role: 'user', content: text });
+  showTyping();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: SYSTEM, messages: hist })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Unable to get a response.';
+    hist.push({ role: 'assistant', content: reply });
+    document.getElementById('typing')?.remove();
+    const sugs = [];
+    if (/roadmap|milestone/i.test(reply)) sugs.push('Convert this to a GANTT timeline');
+    if (/governance|policy/i.test(reply)) sugs.push('Draft a governance committee charter');
+    if (/use case|prioriti/i.test(reply)) sugs.push('Build a use case scoring matrix');
+    if (/kpi|metric/i.test(reply)) sugs.push('Create a KPI dashboard template');
+    addMsg('bot', fmt(reply), sugs.slice(0,3));
+  } catch(e) {
+    document.getElementById('typing')?.remove();
+    addMsg('bot', '⚠️ Connection error. If testing locally, ensure the API key is set and CORS is handled via a backend proxy.');
   }
-
-  function showTyping() {
-    const d = document.createElement('div');
-    d.className = 'msg bot'; d.id = 'typing';
-    d.innerHTML = `<div class="av bot">🤖</div><div class="bubble typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
-    msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
-  }
-
-  function fmt(t) {
-    return t
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^### (.+)$/gm, '<strong style="font-size:14px;display:block;margin:8px 0 4px">$1</strong>')
-      .replace(/^## (.+)$/gm, '<strong style="font-size:15px;display:block;margin:10px 0 4px">$1</strong>')
-      .replace(/^- /gm, '• ')
-      .replace(/\n/g, '<br>');
-  }
-
-  async function send() {
-    const text = inp.value.trim();
-    if (!text || busy) return;
-    busy = true; sbtn.disabled = true;
-    inp.value = ''; inp.style.height = 'auto';
-    addMsg('user', text.replace(/</g,'&lt;').replace(/>/g,'&gt;'));
-    hist.push({ role: 'user', content: text });
-    showTyping();
-    try {
-      const res = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: SYSTEM,
-          messages: hist
-        })
-      });
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || 'Unable to get a response.';
-      hist.push({ role: 'assistant', content: reply });
-      document.getElementById('typing')?.remove();
-      const sugs = [];
-      if (/roadmap|milestone/i.test(reply)) sugs.push('Convert this to a GANTT timeline');
-      if (/governance|policy/i.test(reply)) sugs.push('Draft a governance committee charter');
-      if (/use case|prioriti/i.test(reply)) sugs.push('Build a use case scoring matrix');
-      if (/kpi|metric/i.test(reply)) sugs.push('Create a KPI dashboard template');
-      addMsg('bot', fmt(reply), sugs.slice(0,3));
-    } catch(e) {
-      document.getElementById('typing')?.remove();
-      addMsg('bot', '⚠️ Connection error. Please check the server is running.');
-    }
-    busy = false; sbtn.disabled = false; inp.focus();
-  }
+  busy = false; sbtn.disabled = false; inp.focus();
+}
 </script>
 </body>
 </html>
