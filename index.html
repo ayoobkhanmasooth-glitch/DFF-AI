@@ -124,7 +124,7 @@ Max 350 words unless asked for a full document.`;
 
   // Check on load if key is set
   window.addEventListener('load', () => {
-    if (API_KEY === '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' || API_KEY === '' || !API_KEY.startsWith('sk-')) {
+    if (API_KEY === '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' || API_KEY === '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' || !API_KEY.startsWith('sk-')) {
       addMsg('bot', '⚠️ <strong>API Key not configured.</strong><br>Open this HTML file in a text editor, find the line:<br><code style="background:#f0f0f0;padding:2px 6px;border-radius:3px">const API_KEY = \'PASTE_YOUR_KEY_HERE\'</code><br>and replace <code>PASTE_YOUR_KEY_HERE</code> with your real Anthropic key starting with <code>sk-ant-api03-...</code>');
     }
   });
